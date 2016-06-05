@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta lang="en-US" charset="UTF-8">
+        <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+        <style>
+            html,body{
+                font-family: comic sans ms;
+                font-size:14px;
+                margin:0px;
+                height:100%;
+                overflow: hidden;
+            }
+            body{
+                margin-top:30px;
+            }
+            img{
+                cursor:pointer;
+            }
+            .container{
+                margin:auto;
+                width:100%;
+                height:100%;
+            }
+            .taskInput{
+                outline:none;
+                border:none;
+            }
+            #tasks li{
+                margin-top: 5px;
+                padding: 5px;
+                min-height: 18px;
+                list-style: none;
+                outline: none;
+            }
+            #tasks{
+                padding-bottom: 5px;
+                padding-left: 0px;
+                max-height: calc(100% - 150px);
+                overflow: auto;
+            }
+            #tasks li:first-child{
+                display:none;
+            }
+            #tasks li:nth-child(odd):not(:first-child){
+                background: #f1f1f1;
+            }
+            .action:before{
+                display:block;
+                content: attr(strTime);
+                color:#888;
+                font-size:10px;
+                text-align:left;
+                text-decoration: none !important;
+            }
+            li[contenteditable=true][placeholder]:empty:before {
+                content: attr(placeholder);
+                display: block; /* For Firefox */
+                color: #ccc;
+                font-style: italic;
+            }
+            .footer{
+                position:fixed;
+                bottom:0px;
+                color: #787;
+                margin: 5px auto;
+                width:100%;
+                padding: 0px;
+            }
+            .footer a{
+                color:inherit;
+            }
+            .taskentry{
+                color:#555;
+            }
+            .completed{
+                color: #ccc;
+                text-decoration: line-through;
+            }
+            .completed .complete{
+                display: none;
+            }
+            .completed .action:before{
+                display:none;
+            }
+            .actimg{
+                width:16px;
+                height:16px;
+                display:none;
+                margin: 0px 2px;
+            }
+            #TaskCounter{
+                position: fixed;
+                width: 100%;
+                top: 0px;
+                background: #bada55;
+                color: #000;
+                padding: 5px;
+                box-shadow: 0px 1px 5px #ccc; 
+            }
+            #remainingTask{
+                color:#ffffff;
+                font-family:Arial;
+                text-shadow: 1px 1px azure;
+            }
+            .heading{
+                text-align: center;
+                font-family:Arial;
+            }
+            .complete,.remove{
+                display: inline-block;
+                padding: 5px;
+                border: 1px solid #ccc;
+                background: #fff;
+                margin-right: 5px;
+                font-family: Arial;
+                box-shadow:1px 0px 3px #ccc;
+                font-size: 10px;
+                color:#aaa;
+            }
+            .action{
+                text-align: right;
+            }
+            #add{
+                background: #bada55;
+                width: 40px;
+                height: 40px;
+                border: 1px solid transparent;
+                border-radius: 100%;
+                color: #fff;
+                font-size: 40px;
+                text-align: center;
+                position: fixed;
+                bottom: 10px;
+                vertical-align: middle;
+                right: 15px;
+                font-family: Arial;
+                box-shadow: 3px 2px 5px #999;
+            }
+            #newtaskAction{
+                display: none;
+            }
+            #saveTask,#cancelTask{
+                width: 49%;
+                display: inline-block;
+                box-sizing: border-box;
+                text-align: center;
+                border: 1px solid #aaa;
+                padding: 3px;
+            }
+            #tasks.editMode li:not(:first-child){
+                display:none;
+            }
+            .remove {
+                color: #da5555;
+            }
+            .complete {
+                color: #55da55;
+            }
+            
+        </style>
+    </head>
+    <body onload="onInit();">
+        <h4 class="heading">My Tasks</h4>
+        <div class=container>
+            <ul id='tasks'>
+                <li placeholder='Add a new task' contenteditable='true'></li>
+            </ul>
+            <div id="newtaskAction">
+                <div id="saveTask" onclick="saveTask();">Save</div>
+                <div id="cancelTask" onclick="cancelTask();">Cancel</div>
+            </div>
+        </div>
+        <div id='TaskCounter' align='center'> You have <span id='remainingTask'></span> tasks pending.</div>
+        <div class='footer' align='center'><a href="https://github.com/Anknit/PlanD/issues" target="_blank">Feedbacks & Suggestions</a></div>
+        <div id="add" onclick="showAddTask();">+</div>
+        <script>
+        function onInit(){
+            var temp='';
+            var temp2='';
+            var taskCount='';
+            var tasks = document.getElementById('tasks');
+            if(localStorage.getItem('taskEntry') != '' && localStorage.getItem('taskEntry') != null){
+                tasks.innerHTML = localStorage.getItem('taskEntry');
+            }
+            setTaskCounter();
+        }
+        var saveTask = function(){
+            document.getElementById('tasks').className = document.getElementById('tasks').className.replace('editMode','');
+            var temp = document.getElementById('tasks').children[0];
+            if(temp.innerText == ''){
+                return true;
+            }
+            temp2 = document.createElement('li');
+            temp2.className += 'taskentry';
+            temp2.innerHTML += temp.innerHTML+'<div class="action" strTime="'+new Date().toLocaleString()+'"><div class="complete" onclick="taskcomplete(this.parentNode);">&#10003; Complete</div><div class="remove" onclick="removetask(this.parentNode);">&#10007; Remove</div></div>';
+            document.getElementById('tasks').appendChild(temp2);
+            temp.innerHTML = '';
+            setTaskCounter();
+            temp.style.display = 'none';
+            localStorage.setItem('taskEntry',document.getElementById('tasks').innerHTML);
+            document.getElementById('newtaskAction').style.display = 'none';
+            document.getElementById('add').style.display = 'block';
+        };
+        var cancelTask = function(){
+            document.getElementById('tasks').className = document.getElementById('tasks').className.replace('editMode','');
+            var temp = document.getElementById('tasks').children[0];
+            temp.innerText = ''
+            temp.style.display = 'none';
+            document.getElementById('newtaskAction').style.display = 'none';
+            document.getElementById('add').style.display = 'block';
+        };
+        var showAddTask = function(){
+            var task = document.getElementById('tasks');
+            task.className += ' editMode';
+            task.children[0].style.display = 'list-item';
+            task.children[0].focus();
+            document.getElementById('newtaskAction').style.display = 'block';
+            document.getElementById('add').style.display = 'none';
+        };
+        var taskcomplete	=	function(taskObject){
+            if(taskObject.style.opacity != 1){
+                taskObject.style.opacity = 1;
+                taskObject.parentElement.className += ' completed';
+                taskObject.parentElement.setAttribute('contenteditable','false');
+                localStorage.setItem('taskEntry',document.getElementById('tasks').innerHTML);
+                setTaskCounter();
+            }
+        }
+        var removetask	=	function(taskObject){
+            taskObject.parentNode.parentNode.removeChild(taskObject.parentNode);
+            localStorage.setItem('taskEntry',document.getElementById('tasks').innerHTML);
+            setTaskCounter();
+        }
+        var setTaskCounter	=	function(){
+            temp = document.getElementsByClassName('taskentry').length;
+            temp2 = document.getElementsByClassName('completed').length;
+            document.getElementById('remainingTask').innerHTML = parseInt(temp)-parseInt(temp2);
+        }
+        </script>
+    </body>
+</html>
