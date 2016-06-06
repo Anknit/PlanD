@@ -1,5 +1,5 @@
 # PlanD
-A local to do application
+A local to do application built on [Apache Cordova](https://cordova.apache.org/)
 
 Download the [apk from github](https://github.com/Anknit/PlanD/releases/download/Beta/PlanD.apk) size:170KB
 
